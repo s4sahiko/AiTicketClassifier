@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+@theme {
+  --color-background: #09090b;
+  --color-foreground: #fafafa;
+  
+  --color-card: #18181b;
+  --color-card-foreground: #fafafa;
+  
+  --color-primary: #2563eb;
+  --color-primary-hover: #1d4ed8;
+  
+  --color-secondary: #27272a;
+  --color-accent: #3f3f46;
+  
+  --color-border: #27272a;
+  --color-input: #09090b;
+  
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-3xl: 1.5rem;
+}
+
+@layer base {
+  body {
+    @apply bg-zinc-950 text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none !important;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+}
+
+.glass-morphism {
+  @apply bg-zinc-900 border border-zinc-800 shadow-xl;
+}
+
+.electric-gradient {
+  @apply bg-indigo-600;
+}
+
+.electric-text {
+  @apply text-white font-bold;
+}
+
+.neon-glow {
+  box-shadow: none;
+}

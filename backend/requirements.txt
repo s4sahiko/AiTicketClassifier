@@ -1,0 +1,12 @@
+flask
+requests
+pandas
+numpy
+transformers
+torch
+datasets
+evaluate
+scikit-learn
+gunicorn
+gspread
+nltk
