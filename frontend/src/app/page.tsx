@@ -6,7 +6,8 @@ import {
   Shield, Filter, Search, Bell, Upload, Loader2, BookOpen, AlertCircle, 
   Database, Check, ChevronLeft, ChevronRight, X, MessageSquare,
   ArrowUpRight, Sparkles, Zap, Terminal, Globe, Cpu, Layers, MousePointer2,
-  FileText, Activity, Settings, Eye, Trash2, RefreshCcw, Info, ShieldCheck
+  FileText, Activity, Settings, Eye, Trash2, RefreshCcw, Info, ShieldCheck,
+  Download
 } from 'lucide-react';
 import axios from 'axios';
 import { cn } from '@/lib/utils';
@@ -50,9 +51,49 @@ export default function NeuralDashboard() {
   
   const notificationRef = useRef<HTMLDivElement>(null);
 
+  const [isOnline, setIsOnline] = useState(true);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
   const addEvent = (msg: string, type: 'info' | 'warning' | 'error' = 'info') => {
     setSystemEvents(prev => [{ type, msg, time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }, ...prev]);
     if (!showNotifications) setHasUnread(true);
+  };
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setIsOnline(navigator.onLine);
+      const handleOnline = () => {
+        setIsOnline(true);
+        addEvent('Connection restored. Neural link stable.', 'info');
+      };
+      const handleOffline = () => {
+        setIsOnline(false);
+        addEvent('Connection lost. Running in offline fallback mode.', 'warning');
+      };
+      window.addEventListener('online', handleOnline);
+      window.addEventListener('offline', handleOffline);
+
+      const handleBeforeInstallPrompt = (e: Event) => {
+        e.preventDefault();
+        setDeferredPrompt(e);
+        addEvent('PWA installation package is ready.', 'info');
+      };
+      window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+      return () => {
+        window.removeEventListener('online', handleOnline);
+        window.removeEventListener('offline', handleOffline);
+        window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      };
+    }
+  }, []);
+
+  const handleInstallApp = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    addEvent(`PWA installation response: ${outcome}`, 'info');
+    setDeferredPrompt(null);
   };
 
   useEffect(() => {
@@ -284,13 +325,24 @@ export default function NeuralDashboard() {
               <div className="flex flex-col">
                  <span className="text-[6px] font-black text-zinc-700 uppercase tracking-widest mb-0.5">Neural Sync</span>
                  <div className="flex items-center gap-2">
-                    <Activity className="w-2.5 h-2.5 text-emerald-500 animate-pulse" />
-                    <span className="text-[9px] font-black text-zinc-400 tabular-nums">100% stable</span>
+                    <Activity className={cn("w-2.5 h-2.5 animate-pulse", isOnline ? "text-emerald-500" : "text-amber-500")} />
+                    <span className={cn("text-[9px] font-black tabular-nums", isOnline ? "text-zinc-400" : "text-amber-400")}>
+                       {isOnline ? "100% stable" : "offline mode"}
+                    </span>
                  </div>
               </div>
            </div>
         </div>
         <div className="flex items-center gap-4">
+           {deferredPrompt && (
+              <button 
+                onClick={handleInstallApp} 
+                className="flex items-center gap-2 px-3 py-1.5 bg-indigo-500/10 border border-indigo-500/30 rounded-lg hover:bg-indigo-500/20 hover:border-indigo-500/50 transition-all text-indigo-400 animate-pulse active:scale-95 shrink-0"
+              >
+                 <Download className="w-3 h-3" />
+                 <span className="text-[8px] font-black uppercase tracking-wider">Install App</span>
+              </button>
+           )}
            <div className="relative" ref={notificationRef}>
               <button 
                 onClick={handleToggleNotifications} 
